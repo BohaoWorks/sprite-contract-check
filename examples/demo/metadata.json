@@ -1,0 +1,205 @@
+{
+  "frames": [
+    {
+      "duration": 100,
+      "filename": "idle/000",
+      "frame": {
+        "h": 14,
+        "w": 12,
+        "x": 1,
+        "y": 1
+      },
+      "rotated": false,
+      "sourceSize": {
+        "h": 20,
+        "w": 20
+      },
+      "spriteSourceSize": {
+        "h": 14,
+        "w": 12,
+        "x": 4,
+        "y": 3
+      },
+      "trimmed": true
+    },
+    {
+      "duration": 100,
+      "filename": "idle/001",
+      "frame": {
+        "h": 14,
+        "w": 12,
+        "x": 21,
+        "y": 1
+      },
+      "rotated": false,
+      "sourceSize": {
+        "h": 20,
+        "w": 20
+      },
+      "spriteSourceSize": {
+        "h": 14,
+        "w": 12,
+        "x": 4,
+        "y": 2
+      },
+      "trimmed": true
+    },
+    {
+      "duration": 100,
+      "filename": "idle/002",
+      "frame": {
+        "h": 14,
+        "w": 12,
+        "x": 41,
+        "y": 1
+      },
+      "rotated": false,
+      "sourceSize": {
+        "h": 20,
+        "w": 20
+      },
+      "spriteSourceSize": {
+        "h": 14,
+        "w": 12,
+        "x": 4,
+        "y": 3
+      },
+      "trimmed": true
+    },
+    {
+      "duration": 100,
+      "filename": "idle/003",
+      "frame": {
+        "h": 14,
+        "w": 12,
+        "x": 61,
+        "y": 1
+      },
+      "rotated": false,
+      "sourceSize": {
+        "h": 20,
+        "w": 20
+      },
+      "spriteSourceSize": {
+        "h": 14,
+        "w": 12,
+        "x": 4,
+        "y": 2
+      },
+      "trimmed": true
+    },
+    {
+      "duration": 100,
+      "filename": "pulse/004",
+      "frame": {
+        "h": 14,
+        "w": 13,
+        "x": 1,
+        "y": 21
+      },
+      "rotated": false,
+      "sourceSize": {
+        "h": 20,
+        "w": 20
+      },
+      "spriteSourceSize": {
+        "h": 14,
+        "w": 13,
+        "x": 4,
+        "y": 3
+      },
+      "trimmed": true
+    },
+    {
+      "duration": 100,
+      "filename": "pulse/005",
+      "frame": {
+        "h": 14,
+        "w": 13,
+        "x": 21,
+        "y": 21
+      },
+      "rotated": false,
+      "sourceSize": {
+        "h": 20,
+        "w": 20
+      },
+      "spriteSourceSize": {
+        "h": 14,
+        "w": 13,
+        "x": 4,
+        "y": 2
+      },
+      "trimmed": true
+    },
+    {
+      "duration": 100,
+      "filename": "pulse/006",
+      "frame": {
+        "h": 14,
+        "w": 13,
+        "x": 41,
+        "y": 21
+      },
+      "rotated": false,
+      "sourceSize": {
+        "h": 20,
+        "w": 20
+      },
+      "spriteSourceSize": {
+        "h": 14,
+        "w": 13,
+        "x": 4,
+        "y": 3
+      },
+      "trimmed": true
+    },
+    {
+      "duration": 100,
+      "filename": "pulse/007",
+      "frame": {
+        "h": 14,
+        "w": 13,
+        "x": 61,
+        "y": 21
+      },
+      "rotated": false,
+      "sourceSize": {
+        "h": 20,
+        "w": 20
+      },
+      "spriteSourceSize": {
+        "h": 14,
+        "w": 13,
+        "x": 4,
+        "y": 2
+      },
+      "trimmed": true
+    }
+  ],
+  "meta": {
+    "app": "https://www.aseprite.org/",
+    "format": "RGBA8888",
+    "frameTags": [
+      {
+        "direction": "forward",
+        "from": 0,
+        "name": "idle",
+        "to": 3
+      },
+      {
+        "direction": "pingpong",
+        "from": 4,
+        "name": "pulse",
+        "to": 7
+      }
+    ],
+    "image": "metadata.png",
+    "scale": "1",
+    "size": {
+      "h": 40,
+      "w": 80
+    },
+    "version": "synthetic-demo"
+  }
+}
