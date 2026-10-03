@@ -11,7 +11,15 @@ Cloud verification on 2026-10-01 using Python 3.12 and Pillow 12.3.0:
 - Source and tests compile successfully
 - 16-bit PNG rejection tested for grayscale, RGB, grayscale+alpha, RGBA at samples 256 and 257
 
-The configured cross-platform GitHub Actions matrix has not been run locally.
+## Hosted verification
+
+On 2026-10-02, the [2026-10-01 Actions run](https://github.com/BohaoWorks/sprite-contract-check/actions/runs/36835326012)
+was verified successful for commit `4ccaa6cce17bb4aeb8d2f6534e78ac5e50f9b2e2`.
+All nine Linux/Windows/macOS and Python 3.10/3.12/3.14 jobs passed, including
+package installation, unit tests, demo generation and the installed command.
+This result applies only to that commit; later commits need their own checks.
+
+## Local verification limits
 No registry release is claimed. Wheel installation used --no-build-isolation and
 --no-deps because required build/runtime packages were already available; a
 fresh online dependency installation was not tested here.
