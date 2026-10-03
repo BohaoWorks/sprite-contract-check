@@ -11,27 +11,64 @@ server, API key, or game-engine plugin is needed.
 [Original eight-frame demo](examples/demo/repacked-report.html)
 
 
-## Install and try
+## What a repack should not hide
 
-Requires Python 3.10+ and Pillow 12.2–12.x. Install from this checkout (no package
-registry release is claimed):
+A raw PNG or JSON diff changes when an atlas is repacked, even if every named
+sprite is identical. This checker compares the export contract after placing
+trimmed frames back on their source canvas.
+
+| Included synthetic case | Content mode | What the report shows |
+| --- | --- | --- |
+| Same 8 sprites, reordered and repacked | Pass, exit 0 | 8 packing changes; 0 pixel changes |
+| One pixel changed, one duration changed, one frame deleted | Changed, exit 1 | Pixel, timing, missing-frame and tag changes |
+| Repack with `--mode coordinates` | Changed, exit 1 | Atlas positions and sheet dimensions changed |
+
+These are reproducible fixtures, not a customer case study. A change is a review
+signal, not necessarily a bug. Original demo art is included under the MIT license.
+
+## Two-minute quickstart
+
+Requires Git, Python 3.10+ and Pillow 12.2–12.x. Dependency download time varies.
+No Aseprite installation is required. Install from source; no package-registry
+release is claimed.
+
+```sh
+git clone https://github.com/BohaoWorks/sprite-contract-check.git
+cd sprite-contract-check
+python -m venv .venv
+```
+
+Activate the environment with `source .venv/bin/activate` on macOS/Linux, or
+`.venv\Scripts\Activate.ps1` in Windows PowerShell. Then:
 
 ```sh
 python -m pip install .
-sprite-contract-check \
-  examples/demo/before.json examples/demo/before.png \
-  examples/demo/repacked.json examples/demo/repacked.png \
-  --old-indices examples/demo/before-indices.json \
-  --new-indices examples/demo/repacked-indices.json \
-  --json result.json --html result.html
+python -m sprite_contract_check examples/demo/before.json examples/demo/before.png examples/demo/repacked.json examples/demo/repacked.png --old-indices examples/demo/before-indices.json --new-indices examples/demo/repacked-indices.json --json repacked.json --html repacked.html
 ```
 
-Open `result.html` locally. This example exits **0**: all eight named sprites are
-unchanged, despite a different sheet shape, packing, JSON order, and array/hash
-representation. Replace `repacked` with `changed` in both input paths and the
-indices path to see an exit **1** report: one deleted sprite, one changed pixel,
-one timing change, and a changed tag. The demo art is original synthetic art
-included under this repository's MIT license.
+Open `repacked.html` in your browser. Expected: **compatible**, all 8 frames
+matched, 8 packing changes and 0 pixel changes. The command exits **0**.
+
+Now compare the deliberately changed export:
+
+```sh
+python -m sprite_contract_check examples/demo/before.json examples/demo/before.png examples/demo/changed.json examples/demo/changed.png --old-indices examples/demo/before-indices.json --new-indices examples/demo/changed-indices.json --json changed.json --html changed.html
+```
+
+Open `changed.html`. Expected: **changed**, one removed frame, one pixel-change
+frame, one duration-change frame and one tag change. Exit **1** is the expected
+comparison result, not an installation failure. In PowerShell, inspect
+`$LASTEXITCODE`; in macOS/Linux shells, use `echo $?` immediately after the command.
+
+Both reports are self-contained HTML files that work offline. The sidecars in
+these examples provide explicit source indices for animation tags; see below
+before substituting your own exports.
+
+To run and verify both expected outcomes with one command after installation:
+
+```sh
+python examples/quickstart.py --output-dir demo-output
+```
 
 ## Use in a build
 
