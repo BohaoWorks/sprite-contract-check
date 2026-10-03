@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{name = "zhengbohao74-lgtm"}]
+authors = [{name = "BohaoWorks"}]
 dependencies = ["Pillow>=12.2.0,<13"]
 keywords = ["aseprite", "sprite", "atlas", "pixel-art", "ci", "regression"]
 classifiers = [
@@ -22,8 +22,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/zhengbohao74-lgtm/sprite-contract-check"
-Issues = "https://github.com/zhengbohao74-lgtm/sprite-contract-check/issues"
+Homepage = "https://github.com/BohaoWorks/sprite-contract-check"
+Issues = "https://github.com/BohaoWorks/sprite-contract-check/issues"
 
 [project.scripts]
 sprite-contract-check = "sprite_contract_check.cli:main"
