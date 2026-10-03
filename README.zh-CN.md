@@ -9,18 +9,58 @@
 [English](README.md) · [完整比较规则与限制](docs/contract.md)
 
 
-## 安装与演示
+## 同一套精灵，重新打包后应该看到什么
 
-需要 Python 3.10+ 和 Pillow 12.2–12.x。从本仓库安装（目前不声称已发布到 PyPI）：
+直接比较 PNG 或 JSON 时，图集重新排列就会产生大量变化。本工具按名称匹配，
+把裁剪后的精灵放回原始画布，再比较导出约定。
+
+| 仓库内的合成案例 | content 模式结果 | 报告内容 |
+| --- | --- | --- |
+| 8 帧内容不变，顺序与排列改变 | 通过，退出码 0 | 8 帧排列变化，0 帧像素变化 |
+| 修改一个像素、一帧时长，删除一帧 | 有变化，退出码 1 | 像素、时长、缺失帧及标签变化 |
+| 重新排列，使用 `--mode coordinates` | 有变化，退出码 1 | 图集坐标与尺寸变化 |
+
+这些是可复现的合成测试素材，不是真实客户案例。变化意味着需要审核，不一定是错误。
+原创演示图像采用本仓库的 MIT 许可证。
+
+## 两分钟快速上手
+
+需要 Git、Python 3.10+ 和 Pillow 12.2–12.x。依赖下载耗时取决于网络。
+不需要 Aseprite。从源码安装，目前不声称已发布到 PyPI。
+
+```sh
+git clone https://github.com/BohaoWorks/sprite-contract-check.git
+cd sprite-contract-check
+python -m venv .venv
+```
+
+macOS/Linux 用 `source .venv/bin/activate` 激活；Windows PowerShell 用
+`.venv\Scripts\Activate.ps1`。然后执行：
 
 ```sh
 python -m pip install .
-sprite-contract-check examples/demo/before.json examples/demo/before.png examples/demo/repacked.json examples/demo/repacked.png --old-indices examples/demo/before-indices.json --new-indices examples/demo/repacked-indices.json --json result.json --html result.html
+python -m sprite_contract_check examples/demo/before.json examples/demo/before.png examples/demo/repacked.json examples/demo/repacked.png --old-indices examples/demo/before-indices.json --new-indices examples/demo/repacked-indices.json --json repacked.json --html repacked.html
 ```
 
-本地打开 result.html。八个原创演示精灵的排列、图集尺寸和 JSON 结构发生变化，
-但还原后的像素不变，因此退出码为 0。把命令里的三处 repacked 改为 changed，
-即可查看删除一帧、修改一个像素、改变一帧时长和一个标签的报告，退出码为 1。
+用浏览器打开 `repacked.html`。预期：8 帧匹配、8 帧排列变化、0 帧像素变化，
+结果通过，退出码 **0**。接着运行有意修改的案例：
+
+```sh
+python -m sprite_contract_check examples/demo/before.json examples/demo/before.png examples/demo/changed.json examples/demo/changed.png --old-indices examples/demo/before-indices.json --new-indices examples/demo/changed-indices.json --json changed.json --html changed.html
+```
+
+打开 `changed.html`。预期：删除一帧、一帧像素变化、一帧时长变化、一个标签变化。
+退出码 **1** 是预期的比较结果，不是安装失败。PowerShell 用 `$LASTEXITCODE` 查看，
+macOS/Linux 在命令之后立即执行 `echo $?`。
+
+报告均为自包含的离线 HTML。有动画标签时需要明确的源帧索引，示例已提供
+sidecar JSON。替换成自己的素材前，请阅读下方限制。
+
+安装后也可用一条命令运行并验证以上两个预期结果：
+
+```sh
+python examples/quickstart.py --output-dir demo-output
+```
 
 ## CI 使用
 
