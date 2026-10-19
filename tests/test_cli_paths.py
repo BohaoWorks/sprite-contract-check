@@ -115,6 +115,22 @@ class PathTests(unittest.TestCase):
             status, result, _ = self.invoke(self.arguments + ["--json", str(self.root / "new" / "report.json")])
         self.assertEqual((status, result["status"]), (0, "pass"))
 
+    def test_parent_components_checked_before_platform_normalization(self):
+        original = Path.resolve
+
+        def collapsing_resolve(path, strict=False):
+            # Windows can collapse name/.. before strict filesystem lookup.
+            if ".." in path.parts:
+                return self.root / "report.json"
+            return original(path, strict=strict)
+
+        for prefix in (self.root / "missing", self.inputs[0]):
+            with self.subTest(prefix=prefix.name):
+                with patch.object(Path, "resolve", collapsing_resolve), \
+                        patch("sprite_contract_check.cli._write") as write:
+                    self.assert_path_error(self.arguments + ["--json", str(prefix / ".." / "report.json")])
+                    write.assert_not_called()
+
     def test_dangling_links_are_path_errors_and_are_not_replaced(self):
         link = self.root / "dangling"
         try:

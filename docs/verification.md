@@ -6,12 +6,13 @@ Cloud Linux verification with Python 3.12.14 and Pillow 12.3.0:
 
 - Reproduced input/output symbolic-link loops raising an uncaught `RuntimeError`
   and exiting 1 on the previous implementation.
-- Eleven new path tests cover actual loops in all inputs, sidecars, report paths
+- Twelve new path tests cover actual loops in all inputs, sidecars, report paths
   and parents; simulated `RuntimeError`/`OSError`; unchanged companion reports;
   new nested report directories; ordinary missing inputs; and input aliases.
   They also cover loops around missing/parent components, dangling links,
-  existing parent traversal, and strict-only path resolution.
-- All **70 tests passed with zero skips** from source and from an independently
+  existing parent traversal, strict-only path resolution, and simulated Windows
+  normalization that would otherwise hide missing or non-directory components.
+- All **71 tests passed with zero skips** from source and from an independently
   installed wheel, with installed-package imports verified outside the checkout.
 - The real CLI subprocess returned structured `invalid` JSON, exit 2 and empty
   stderr for a report-path loop, without replacing the link.
@@ -21,6 +22,11 @@ Cloud Linux verification with Python 3.12.14 and Pillow 12.3.0:
 The wheel reused the already-installed Pillow dependency. Local verification is
 not a claim that all Python/OS combinations ran; check Actions for the exact
 published commit's matrix results.
+
+The first [draft-branch CI run](https://github.com/BohaoWorks/sprite-contract-check/actions/runs/39227130480)
+passed the six Linux/macOS jobs but exposed two Windows parent-traversal
+regressions. The follow-up checks each original prefix before `..` before whole-path
+normalization; this retains the failing cases rather than skipping them.
 
 Cloud verification on 2026-10-01 using Python 3.12 and Pillow 12.3.0:
 

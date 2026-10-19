@@ -52,6 +52,13 @@ def _invalid(error: ContractError) -> dict:
 
 def _resolved_path(path: Path) -> Path:
     try:
+        # Windows may collapse name/.. before strict filesystem lookup. Check
+        # each original prefix first so an unresolved component cannot vanish.
+        prefix = Path()
+        for part in path.parts:
+            if part == ".." and not prefix.resolve(strict=True).is_dir():
+                raise ContractError("output_error", "could not resolve requested file paths")
+            prefix /= part
         missing = []
         current = path
         while True:
