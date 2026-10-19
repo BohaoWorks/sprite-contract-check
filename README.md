@@ -85,6 +85,13 @@ JSON always goes to stdout; `--json` also saves it. Argument-usage errors use
 argparse's stderr and exit 2. Paths never appear in comparison JSON. Output is
 deterministic for the same semantic input and options, with no timestamps.
 
+If any input, sidecar, or report path contains a symbolic-link loop, the CLI
+returns an `invalid` JSON result and exits **2** before writing reports. Resolve
+the loop and rerun; this is a file-path error, not a sprite-contract change.
+Dangling links/junctions and `..` after a missing path component are also refused;
+use the intended ordinary file path instead. Existing symlinks to readable files
+and new report directories remain supported.
+
 The default `--mode content` permits repacking and equivalent trim changes.
 Use `--mode coordinates` when your engine relies on fixed atlas rectangles or
 sheet dimensions. Both modes fail on renamed/added/deleted frames, pixel/canvas

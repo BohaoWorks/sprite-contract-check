@@ -51,6 +51,15 @@ not part of the contract; decoded RGBA channels are.
 
 Use regular local files in a trusted directory. Explicit output paths are writable
 by design; the program rejects input/output aliases and duplicate output paths.
+Path-resolution failures, including symbolic-link loops in inputs, sidecars,
+outputs, or their ancestors, return `invalid` / `output_error` and exit 2 without
+writing reports. Error messages omit the failing path. New report directories
+remain supported; an ordinary missing input still reports `missing_file`.
+Dangling links/junctions and parent traversal (`..`) after a missing component
+are conservatively refused with `output_error`; report generation never replaces
+such links. Parent traversal through existing directories and valid symlinks
+continue to work. This check uses strict resolution on every supported Python,
+so behavior does not depend on non-strict resolution's handling of loops.
 Do not allow untrusted users to supply output paths in a privileged service. This
 is a local CLI, not a hostile multi-tenant sandbox. It does not fetch URLs or
 execute exported strings. Reports embed images, escape text, contain no script,

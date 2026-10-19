@@ -50,6 +50,33 @@ def _invalid(error: ContractError) -> dict:
             "compatible": False, "error": {"code": error.code, "message": str(error)}}
 
 
+def _resolved_path(path: Path) -> Path:
+    try:
+        missing = []
+        current = path
+        while True:
+            try:
+                resolved = current.resolve(strict=True)
+                return resolved.joinpath(*reversed(missing))
+            except FileNotFoundError:
+                # Append only genuinely absent plain-name components. A loose
+                # resolve can hide loops, especially around missing/../ paths.
+                if current.name == ".." or current.parent == current:
+                    raise ContractError("output_error", "could not resolve requested file paths") from None
+                try:
+                    current.lstat()
+                except FileNotFoundError:
+                    pass
+                else:
+                    # Existing but unresolvable links/junctions are not new
+                    # report filenames and must not be replaced by reports.
+                    raise ContractError("output_error", "could not resolve requested file paths") from None
+                missing.append(current.name)
+                current = current.parent
+    except (OSError, RuntimeError):
+        raise ContractError("output_error", "could not resolve requested file paths") from None
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     inputs = [args.old_json, args.old_png, args.new_json, args.new_png, args.mapping, args.old_indices, args.new_indices]
@@ -57,8 +84,8 @@ def main(argv: list[str] | None = None) -> int:
     before = after = None
     safe_outputs = False
     try:
-        protected = {p.resolve() for p in inputs if p is not None}
-        targets = [p.resolve() for p in outputs]
+        protected = {_resolved_path(p) for p in inputs if p is not None}
+        targets = [_resolved_path(p) for p in outputs]
         if len(set(targets)) != len(targets) or any(p in protected for p in targets):
             raise ContractError("output_collision", "outputs must be distinct from each other and every input")
         # Also protect an input from an existing hard-linked output.
