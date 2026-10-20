@@ -114,6 +114,12 @@ indices. They must come from your known export contract, not guessed ordering.
 This release rejects tags spanning omitted indices and duplicate source indices
 (e.g. multi-layer source-index reuse).
 
+Aseprite exports a tag's positive `repeat` count as a decimal string, such as
+`"2"`. These counts and integer counts are compared as the same value (0–65535);
+omitted repeat, `0`, and `"0"` are equivalent. Strings must use canonical ASCII
+decimal digits, without signs, spaces, or leading zeros. A changed repeat count
+still fails the contract. Other numeric fields remain strict.
+
 Use `--mapping rename.json` with `{"old-name":"new-name"}` to pair renamed
 frames for visual review. Renames remain contract changes. There is no fuzzy,
 position-based, or pixel-based automatic matching.
