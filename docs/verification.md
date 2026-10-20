@@ -1,5 +1,29 @@
 # Verification record
 
+## Aseprite repeat-count regression, 2026-10-20
+
+Cloud Linux verification with Python 3.12.14 and Pillow 12.3.0:
+
+- Checked the pinned official exporter linked in [the contract](contract.md):
+  positive tag-repeat counts are emitted as decimal strings; zero is omitted.
+- Reproduced a self-comparison returning exit 2 / `invalid_value` with
+  `"repeat": "2"`, while the same synthetic export with integer `2` returned 0.
+  No Aseprite application was run; the original demo and tiny generated fixtures
+  reproduce the exporter's field representation.
+- Seven new tests were added; the pre-fix run failed on valid string forms,
+  and the complete focused suite passed after the fix.
+  They cover array/hash exports, integer/string equivalence, omitted/zero forms,
+  65535, changed counts, strict malformed/out-of-range rejection, other numeric
+  fields, unknown tag metadata, and real CLI JSON/HTML output at exit 0/1/2.
+- All **78 tests passed with zero skips** from source and from an independently
+  installed wheel, with wheel imports verified outside the source checkout.
+- Source and wheel quickstarts passed. Regenerating the original synthetic demo
+  left its tracked bytes unchanged; compile and whitespace checks passed.
+
+The wheel reused installed build/runtime dependencies. No version, dependency,
+workflow, or report-schema change is included. This local result does not imply
+hosted CI passed; verify the exact published commit separately.
+
 ## Path-resolution regression, 2026-10-19
 
 Cloud Linux verification with Python 3.12.14 and Pillow 12.3.0:
