@@ -13,13 +13,23 @@ are compared as decoded channel values, with no ICC/gamma color management.
 Content mode treats atlas rectangle, equivalent trimming, and sheet-size changes
 as informational. Coordinate mode fails on packing or sheet-size changes too.
 Duration, presence, names, canvas dimensions, indices, tag metadata and unknown
-root/meta/frame fields affect both modes. JSON numeric types are not coerced.
+root/meta/frame fields affect both modes. JSON numeric types are not coerced,
+except for Aseprite's documented tag-repeat string representation below.
 The report's `changed_pixel_count` can be zero for a canvas-size-only change.
 
 Tags require unique explicit nonnegative source indices for every frame. Every
 index in each inclusive tag range must exist; missing/excluded source frames are
 not silently skipped. Direction accepts forward, reverse, pingpong, and
 pingpong_reverse. Missing direction means forward; missing repeat means 0.
+The official [Aseprite exporter](https://github.com/aseprite/aseprite/blob/b3e34acbae812b8a1d814c2e6285343b351c8945/src/app/doc_exporter.cpp#L1573-L1575)
+emits positive repeat counts as quoted decimal strings. For this field only,
+integers and canonical ASCII decimal strings in 0–65535 normalize to integers.
+Omitted repeat, `0`, and `"0"` are equivalent. String forms must be `"0"` or
+start with 1–9 followed by at most four ASCII digits; signs, spaces, leading
+zeros, fractions, exponents, Unicode digits, and out-of-range values are rejected.
+Booleans, floats, and null are also rejected. Changed counts still fail the
+contract, and tag-change reports contain normalized integer counts. No other
+numeric field or unknown metadata is coerced.
 Tag members follow explicit source-index order. Tag names are unique. Extra tag
 fields are compared. This is deliberately narrower than all possible Aseprite
 exports (for example, multiple layers sharing source indices are unsupported).
