@@ -10,6 +10,7 @@ import hashlib
 import io
 import json
 import math
+import re
 import struct
 import warnings
 from dataclasses import dataclass
@@ -80,6 +81,16 @@ def _integer(value: Any, where: str, minimum: int = 0, maximum: int = 1_000_000)
     if type(value) is not int or not minimum <= value <= maximum:
         _fail("invalid_value", f"{where} must be an integer in {minimum}..{maximum}")
     return value
+
+
+def _repeat(value: Any, where: str) -> int:
+    # Aseprite exports positive repeat counts as quoted decimal numbers.
+    # Limit syntax and length before conversion; other numeric fields stay strict.
+    if isinstance(value, str):
+        if re.fullmatch(r"(?:0|[1-9][0-9]{0,4})", value) is None:
+            _fail("invalid_value", f"{where} must be an integer or canonical decimal string in 0..65535")
+        value = int(value)
+    return _integer(value, where, maximum=65535)
 
 
 def _name(value: Any, where: str) -> str:
@@ -210,7 +221,7 @@ def _tags(raw: Any, frames: dict[str, Frame], label: str) -> dict:
         direction = tag.get("direction", "forward")
         if direction not in ("forward", "reverse", "pingpong", "pingpong_reverse"):
             _fail("invalid_tags", f"{label}: unsupported tag direction")
-        repeat = _integer(tag.get("repeat", 0), f"{label}.tag.repeat", maximum=65535)
+        repeat = _repeat(tag.get("repeat", 0), f"{label}.tag.repeat")
         if start > end or end - start + 1 > len(frames) or any(i not in by_index for i in range(start, end + 1)):
             _fail("invalid_tags", f"{label}: tag {name!r} references absent source indices")
         tags[name] = {
