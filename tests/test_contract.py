@@ -273,6 +273,95 @@ class ContractTests(unittest.TestCase):
             with self.subTest(key=key, value=value), self.assertRaises(ContractError):
                 self.candidate(doc, indices={"red": 0, "green": 1})
 
+    def test_aseprite_repeat_strings_match_integer_counts(self):
+        for repeat in (1, 2, 65535):
+            for as_hash in (False, True):
+                with self.subTest(repeat=repeat, as_hash=as_hash):
+                    doc = self.tagged()
+                    if as_hash:
+                        doc["frames"] = {f["filename"]: f for f in doc["frames"]}
+                    doc["meta"]["frameTags"][0]["repeat"] = repeat
+                    before = self.candidate(doc, indices={"red": 0, "green": 1})
+                    doc["meta"]["frameTags"][0]["repeat"] = str(repeat)
+                    after = self.candidate(doc, indices={"red": 0, "green": 1})
+                    self.assertIs(type(after.tags["walk"]["repeat"]), int)
+                    self.assertEqual(after.tags["walk"]["repeat"], repeat)
+                    self.assertEqual(compare(before, before), compare(before, after))
+
+    def test_repeat_zero_forms_match_omitted_repeat(self):
+        before = self.candidate(self.tagged(), indices={"red": 0, "green": 1})
+        for repeat in (0, "0"):
+            with self.subTest(repeat=repeat):
+                doc = self.tagged()
+                doc["meta"]["frameTags"][0]["repeat"] = repeat
+                after = self.candidate(doc, indices={"red": 0, "green": 1})
+                self.assertEqual(compare(before, before), compare(before, after))
+
+    def test_repeat_string_changes_remain_contract_changes(self):
+        doc = self.tagged()
+        doc["meta"]["frameTags"][0]["repeat"] = "2"
+        before = self.candidate(doc, indices={"red": 0, "green": 1})
+        doc["meta"]["frameTags"][0]["repeat"] = "3"
+        after = self.candidate(doc, indices={"red": 0, "green": 1})
+        for mode in ("content", "coordinates"):
+            with self.subTest(mode=mode):
+                result = compare(before, after, mode=mode)
+                self.assertFalse(result["compatible"])
+                self.assertEqual(result["summary"]["tags_changed"], 1)
+                change = result["changes"]["tags"][0]
+                self.assertEqual(change["before"]["repeat"], 2)
+                self.assertEqual(change["after"]["repeat"], 3)
+
+    def test_repeat_rejects_noncanonical_and_out_of_range_values(self):
+        invalid = ("", " 2", "2 ", "+2", "-1", "02", "00", "2.0", "2e0",
+                   "2\n", "２", "٢", "65536", "9" * 10000,
+                   -1, 65536, True, False, 2.0, None, [], {})
+        for repeat in invalid:
+            with self.subTest(repeat=repr(repeat)[:80]):
+                doc = self.tagged()
+                doc["meta"]["frameTags"][0]["repeat"] = repeat
+                self.assert_invalid(doc, "invalid_value", indices={"red": 0, "green": 1})
+
+    def test_repeat_conversion_does_not_coerce_tag_range_fields(self):
+        for key, value in (("from", "0"), ("to", "1")):
+            with self.subTest(key=key):
+                doc = self.tagged()
+                doc["meta"]["frameTags"][0].update(repeat="2")
+                doc["meta"]["frameTags"][0][key] = value
+                self.assert_invalid(doc, "invalid_value", indices={"red": 0, "green": 1})
+
+    def test_repeat_conversion_preserves_unknown_tag_metadata_types(self):
+        doc = self.tagged()
+        doc["meta"]["frameTags"][0].update(repeat="2", future_count="2")
+        before = self.candidate(doc, indices={"red": 0, "green": 1})
+        doc["meta"]["frameTags"][0]["future_count"] = 2
+        after = self.candidate(doc, indices={"red": 0, "green": 1})
+        self.assertEqual(compare(before, after)["summary"]["tags_changed"], 1)
+
+    def test_repeat_strings_work_in_cli_with_reports(self):
+        doc = self.tagged()
+        for index, frame in enumerate(doc["frames"]):
+            frame["index"] = index
+        doc["meta"]["frameTags"][0]["repeat"] = "2"
+        self.old_paths = self.fx.write("repeat-old", doc)
+        for repeat, expected in (("2", 0), ("3", 1), ("02", 2)):
+            with self.subTest(repeat=repeat):
+                doc["meta"]["frameTags"][0]["repeat"] = repeat
+                new_paths = self.fx.write("repeat-new", doc)
+                report_json, report_html = self.root / "repeat.json", self.root / "repeat.html"
+                process = subprocess.run(
+                    [sys.executable, "-m", "sprite_contract_check",
+                     *map(str, (*self.old_paths, *new_paths)),
+                     "--json", str(report_json), "--html", str(report_html)],
+                    capture_output=True, text=True, timeout=20)
+                self.assertEqual(process.returncode, expected, process.stderr)
+                self.assertEqual(process.stderr, "")
+                result = json.loads(process.stdout)
+                self.assertEqual(json.loads(report_json.read_text(encoding="utf-8")), result)
+                self.assertIn("<html", report_html.read_text(encoding="utf-8"))
+                if expected == 1:
+                    self.assertEqual(result["changes"]["tags"][0]["after"]["repeat"], 3)
+
     def test_duplicate_tag_names(self):
         doc = self.tagged()
         doc["meta"]["frameTags"].append(copy.deepcopy(doc["meta"]["frameTags"][0]))

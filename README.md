@@ -85,6 +85,13 @@ JSON always goes to stdout; `--json` also saves it. Argument-usage errors use
 argparse's stderr and exit 2. Paths never appear in comparison JSON. Output is
 deterministic for the same semantic input and options, with no timestamps.
 
+If any input, sidecar, or report path contains a symbolic-link loop, the CLI
+returns an `invalid` JSON result and exits **2** before writing reports. Resolve
+the loop and rerun; this is a file-path error, not a sprite-contract change.
+Dangling links/junctions and `..` after a missing path component are also refused;
+use the intended ordinary file path instead. Existing symlinks to readable files
+and new report directories remain supported.
+
 The default `--mode content` permits repacking and equivalent trim changes.
 Use `--mode coordinates` when your engine relies on fixed atlas rectangles or
 sheet dimensions. Both modes fail on renamed/added/deleted frames, pixel/canvas
@@ -106,6 +113,12 @@ integer `index` on every frame is also accepted. Sidecars must agree with embedd
 indices. They must come from your known export contract, not guessed ordering.
 This release rejects tags spanning omitted indices and duplicate source indices
 (e.g. multi-layer source-index reuse).
+
+Aseprite exports a tag's positive `repeat` count as a decimal string, such as
+`"2"`. These counts and integer counts are compared as the same value (0–65535);
+omitted repeat, `0`, and `"0"` are equivalent. Strings must use canonical ASCII
+decimal digits, without signs, spaces, or leading zeros. A changed repeat count
+still fails the contract. Other numeric fields remain strict.
 
 Use `--mapping rename.json` with `{"old-name":"new-name"}` to pair renamed
 frames for visual review. Renames remain contract changes. There is no fuzzy,
